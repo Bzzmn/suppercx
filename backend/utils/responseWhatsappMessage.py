@@ -39,3 +39,7 @@ async def send_text_message(to: str, content: str):
         except Exception as e:
             logger.error(f"An error occurred: {str(e)}")
             raise HTTPException(status_code=500, detail="Internal server error")
+        
+
+async def process_message(phone_number: str, message: str):
+    pass
