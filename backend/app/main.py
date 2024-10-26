@@ -1,3 +1,4 @@
+import os
 from fastapi import FastAPI, Depends, HTTPException, Query, Request
 from sqlalchemy.ext.asyncio import AsyncSession # type: ignore
 from sqlalchemy import select
@@ -8,15 +9,25 @@ import asyncio
 from crewai import Agent, Task, Crew
 from contextlib import asynccontextmanager
 from dotenv import load_dotenv
-import os
+import logging
+
+from utils.responseWhatsappMessage import send_text_message
 
 load_dotenv()
 
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+    yield
 
-app = FastAPI(title="SupperCX API", version="0.1.0")
+app = FastAPI(title="SupperCX API", version="0.1.0", lifespan=lifespan)
 verification_token = os.getenv("WHATSAPP_VERIFICATION_TOKEN")
 
+#webhook de whatsapp + verificar el token
 @app.get("/whatsapp_webhook")
 async def verify_token(
     hub_mode: str = Query(..., alias="hub.mode"),
@@ -30,27 +41,38 @@ async def verify_token(
 #Endpoint de whatsapp
 @app.post("/whatsapp_webhook")
 async def whatsapp_webhook(request: Request, db: AsyncSession = Depends(get_db)):
-
     data = await request.json()
-    phone_number = data.get('from')
-    message = data.get('message')
-
-    if not phone_number or not message:
-        raise HTTPException(status_code=400, detail="Invalid request format")
     
-    print(data)
-    return {"message": "Whatsapp webhook received"}
+    try:
+        entry = data['entry'][0]
+        changes = entry['changes'][0]
+        value = changes['value']
+        
+        if 'messages' in value:
+            message = value['messages'][0]
+            contact = value['contacts'][0]
+            
+            phone_number = message['from']
+            message_body = message['text']['body']
+            timestamp = message['timestamp']
+            name = contact['profile']['name']
 
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
-    yield
-
-app = FastAPI(title="SupperCX API", version="0.1.0", lifespan=lifespan)
-
-# Remove the old @app.on_event("startup") function
+            logger.info(f"Received message from {name} ({phone_number}): {message_body} at {timestamp}")
+            
+            try:
+                response = await send_text_message(phone_number, "Hello! This is a response from SupperCX.")
+                logger.info(f"Response sent: {response}")
+                return {"status": "Message received and response sent"}
+            except HTTPException as e:
+                logger.error(f"Failed to send message: {e.detail}")
+                return {"status": "Message received, but failed to send response", "error": e.detail}
+        else:
+            logger.info(f"Received non-message update: {value}")
+            return {"status": "Update received"}
+    except KeyError as e:
+        logger.error(f"Error processing webhook data: {e}")
+        logger.error(f"Received data: {data}")
+        return {"status": "Error processing webhook data", "error": str(e)}
 
 @app.get("/")
 async def root():
