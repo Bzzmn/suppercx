@@ -1,15 +1,11 @@
 import os
-from fastapi import FastAPI, Depends, HTTPException, Query, Request
-from sqlalchemy.ext.asyncio import AsyncSession  # type: ignore
-from sqlalchemy import select
-from .database import get_db, engine
-from .models import Base, User
-from typing import List
-from contextlib import asynccontextmanager
+from fastapi import FastAPI,HTTPException, Query, Request, Depends
 from dotenv import load_dotenv
 import logging
-from redis.asyncio import Redis
 from .routers import users, agents, tickets, ticketmessages
+from sqlalchemy.ext.asyncio import AsyncSession
+from .database import get_db
+
 
 # from utils.responseWhatsappMessage import send_text_message, process_message
 
@@ -22,37 +18,38 @@ logger = logging.getLogger(__name__)
 app = FastAPI(title="SupperCX API", version="0.1.0")
 verification_token = os.getenv("WHATSAPP_VERIFICATION_TOKEN")
 
-# #webhook de whatsapp + verificar el token
-# @app.get("/whatsapp_webhook")
-# async def verify_token(
-#     hub_mode: str = Query(..., alias="hub.mode"),
-#     hub_token: str = Query(..., alias="hub.verify_token"),
-#     hub_challenge: str = Query(..., alias="hub.challenge")
-# ):
-#     if hub_mode == "subscribe" and hub_token == verification_token:
-#         return int(hub_challenge)
-#     raise HTTPException(status_code=403, detail="Verification token mismatch")
+#webhook de whatsapp + verificar el token
+@app.get("/whatsapp_webhook")
+async def verify_token(
+    hub_mode: str = Query(..., alias="hub.mode"),
+    hub_token: str = Query(..., alias="hub.verify_token"),
+    hub_challenge: str = Query(..., alias="hub.challenge")
+):
+    if hub_mode == "subscribe" and hub_token == verification_token:
+        return int(hub_challenge)
+    raise HTTPException(status_code=403, detail="Verification token mismatch")
 
-# #Endpoint de whatsapp
-# @app.post("/whatsapp_webhook")
-# async def whatsapp_webhook(request: Request, db: AsyncSession = Depends(get_db)):
-#     data = await request.json()
+#Endpoint de whatsapp
 
-#     try:
-#         entry = data['entry'][0]
-#         changes = entry['changes'][0]
-#         value = changes['value']
+@app.post("/whatsapp_webhook")
+async def whatsapp_webhook(request: Request, db: AsyncSession = Depends(get_db)):
+    data = await request.json()
 
-#         if 'messages' in value:
-#             message = value['messages'][0]
-#             contact = value['contacts'][0]
+    
+    entry = data['entry'][0]
+    changes = entry['changes'][0]
+    value = changes['value']
 
-#             phone_number = message['from']
-#             message_body = message['text']['body']
-#             timestamp = message['timestamp']
-#             name = contact['profile']['name']
+    if 'messages' in value:
+        message = value['messages'][0]
+        contact = value['contacts'][0]
 
-#             logger.info(f"Received message from {name} ({phone_number}): {message_body} at {timestamp}")
+        phone_number = message['from']
+        message_body = message['text']['body']
+        timestamp = message['timestamp']
+        name = contact['profile']['name']
+
+        logger.info(f"Received message from {name} ({phone_number}): {message_body} at {timestamp}")
 
 #             # Process the message and get a response
 #             response = await process_message(phone_number, message_body)
@@ -90,4 +87,4 @@ app.include_router(
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=8003)

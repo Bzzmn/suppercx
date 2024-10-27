@@ -1,6 +1,7 @@
+from __future__ import annotations
 from pydantic import BaseModel
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List
 from .models import AgentType, TicketState, Origin
 
 
@@ -69,14 +70,29 @@ class TicketUpdate(TicketBase):
     user_id: Optional[int] = None
     agent_id: Optional[int] = None
 
-
-class TicketResponse(TicketBase):
+class TicketMessageResponse(BaseModel):
     id: int
-    created_at: datetime
-    last_message_date: datetime
+    sender: str
+    email: str
+    body: str
+    sent_date_time: datetime
 
     class Config:
-        from_attributes = True  # Usa esto en lugar de orm_mode = True
+        from_attributes = True
+
+
+
+class TicketResponse(BaseModel):
+    id: int
+    title: str
+    description: Optional[str]
+    original_language: str
+    status: str  # This will be mapped from TicketState
+    source: str  # This will be mapped from Origin
+    messages: List[TicketMessageResponse]
+
+    class Config:
+        from_attributes = True
 
 
 class TicketMessageBase(BaseModel):
@@ -92,8 +108,3 @@ class TicketMessageUpdate(TicketMessageBase):
     conversation: Optional[str] = None
 
 
-class TicketMessageResponse(TicketMessageBase):
-    id: int
-
-    class Config:
-        from_attributes = True  # Usa esto en lugar de orm_mode = True

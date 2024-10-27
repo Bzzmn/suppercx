@@ -44,6 +44,8 @@ class Ticket(Base):
     __tablename__ = "tickets"
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String, nullable=False)
+    description = Column(Text, nullable=True)
+    original_language = Column(String, nullable=False, default="English")
     state = Column(Enum(TicketState), nullable=False)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
     last_message_date = Column(DateTime, default=datetime.datetime.utcnow)
@@ -52,11 +54,15 @@ class Ticket(Base):
     agent_id = Column(Integer, ForeignKey("agents.id"))
     user = relationship("User", backref="tickets")
     agent = relationship("Agent", backref="tickets")
+    messages = relationship("TicketMessage", back_populates="ticket")
 
 
 class TicketMessage(Base):
     __tablename__ = "ticket_messages"
     id = Column(Integer, primary_key=True, index=True)
     ticket_id = Column(Integer, ForeignKey("tickets.id"))
-    conversation = Column(Text, nullable=False)
-    ticket = relationship("Ticket", backref="messages")
+    sender = Column(String, nullable=False)
+    email = Column(String, nullable=False)
+    body = Column(Text, nullable=False)
+    sent_date_time = Column(DateTime, default=datetime.datetime.utcnow)
+    ticket = relationship("Ticket", back_populates="messages")

@@ -1,9 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+from sqlalchemy.orm import joinedload
 from ..database import get_db
-from ..models import Ticket
-from ..schemas import TicketCreate, TicketUpdate, TicketResponse
+from ..models import Ticket, TicketState, Origin
+from ..schemas import TicketCreate, TicketUpdate, TicketResponse, TicketMessageResponse
 from typing import List
 
 router = APIRouter()
@@ -22,8 +23,33 @@ async def create_ticket(ticket: TicketCreate, db: AsyncSession = Depends(get_db)
 async def read_tickets(
     skip: int = 0, limit: int = 100, db: AsyncSession = Depends(get_db)
 ):
-    result = await db.execute(select(Ticket).offset(skip).limit(limit))
-    return result.scalars().all()
+    result = await db.execute(
+        select(Ticket)
+        .options(joinedload(Ticket.messages))
+        .offset(skip)
+        .limit(limit)
+    )
+    tickets = result.unique().scalars().all()
+    
+    return [
+        TicketResponse(
+            id=ticket.id,
+            title=ticket.title,
+            description=ticket.description,
+            original_language=ticket.original_language,
+            status=ticket.state.value,
+            source=ticket.origin.value,
+            messages=[
+                TicketMessageResponse(
+                    id=message.id,
+                    sender=message.sender,
+                    email=message.email,
+                    body=message.body,
+                    sent_date_time=message.sent_date_time
+                ) for message in ticket.messages
+            ]
+        ) for ticket in tickets
+    ]
 
 
 @router.get("/{ticket_id}", response_model=TicketResponse)

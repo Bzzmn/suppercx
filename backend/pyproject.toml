@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "backend"
+name = "suppercx-backend"
 version = "0.1.0"
 description = ""
 authors = ["Alvaro Acevedo <alvaro.acevedo.ing@gmail.com>"]
@@ -26,8 +26,8 @@ pylint = "^3.3.1"
 pytest = "^8.3.3"
 
 [tool.poetry.scripts]
-dev = "uvicorn app.main:app --reload"
+dev = "uvicorn app.app:app --reload"
 
 [build-system]
-requires = ["poetry-core"]
+requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
