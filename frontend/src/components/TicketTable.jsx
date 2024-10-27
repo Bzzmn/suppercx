@@ -23,6 +23,16 @@ import {
 import { useRouter } from "next/navigation";
 
 export default function TicketTable({ data }) {
+  const ticketSourceVocabulary = {
+    email: "email",
+    whatsApp: "whatsapp",
+  };
+  const statusMapping = {
+    open: "open",
+    pending: "pending",
+    new: "new",
+    closed: "closed",
+  };
   const router = useRouter();
 
   if (data.length === 0) {
@@ -57,13 +67,13 @@ export default function TicketTable({ data }) {
                 </p>
               </TableCell>
               <TableCell>
-                {row.source === "Email" && (
+                {row.source === ticketSourceVocabulary.email && (
                   <>
                     <Mail className="h-5 w-5 text-muted-foreground" />
-                    <span className="sr-only">Gmail</span>
+                    <span className="sr-only">Email</span>
                   </>
                 )}
-                {row.source === "WhatsApp" && (
+                {row.source === ticketSourceVocabulary.whatsApp && (
                   <>
                     <MessageCircle className="h-5 w-5 text-muted-foreground" />
                     <span className="sr-only">WhatsApp</span>
@@ -100,8 +110,10 @@ export default function TicketTable({ data }) {
                 </div>
               </TableCell>
               <TableCell>
-                {row.status === "Pending" && <Badge>Pending</Badge>}
-                {row.status === "Closed" && <Badge>Closed</Badge>}
+                {row.status === statusMapping.pending && <Badge>Pending</Badge>}
+                {row.status === statusMapping.closed && <Badge>Closed</Badge>}
+                {row.status === statusMapping.open && <Badge>Open</Badge>}
+                {row.status === statusMapping.new && <Badge>New</Badge>}
               </TableCell>
             </TableRow>
           ))}

@@ -15,8 +15,12 @@ import {
 } from "lucide-react";
 
 export default function TicketDetail({ ticket }) {
+  const ticketSourceVocabulary = {
+    email: "email",
+    whatsApp: "whatsapp",
+  };
+  const ticketOwner = ticket.messages[0].sender;
   const [response, setResponse] = useState("");
-  const senderName = "Franco Parra";
 
   return (
     <div className="flex bg-background">
@@ -30,13 +34,13 @@ export default function TicketDetail({ ticket }) {
               )}
             </span>
             <Badge variant="secondary">DRAFT</Badge>
-            {ticket.source === "Email" && (
+            {ticket.source === ticketSourceVocabulary.email && (
               <div className="flex items-center">
                 <Mail className="h-4 w-4 mr-2" />
                 <span>Email</span>
               </div>
             )}
-            {ticket.source === "WhatsApp" && (
+            {ticket.source === ticketSourceVocabulary.whatsApp && (
               <div className="flex items-center">
                 <MessageCircle className="h-4 w-4 mr-2" />
                 <span>WhatsApp</span>
@@ -54,7 +58,7 @@ export default function TicketDetail({ ticket }) {
           <Card
             key={message.id}
             className={
-              message.sender === "Support Team"
+              message.sender !== ticketOwner
                 ? "mb-6 bg-blue-50 ml-40"
                 : "mb-6 mr-40"
             }
@@ -252,29 +256,28 @@ export default function TicketDetail({ ticket }) {
           </CardHeader>
           <CardContent>
             <p className="text-sm">
-              Hi {senderName}, Thank you for reaching out to the
-              enricampos2020@gmail.comsupport team. We're sorry to hear that
-              you're having trouble accessing your account, and we're here to
-              help resolve this issue as quickly as possible. To assist you
-              better, please follow the steps below: 1. Verify Your Credentials:
-              - Ensure that you are entering the correct email address and
-              password. Remember, passwords are case-sensitive. 2. Reset Your
-              Password: - If you don't remember your password, please use the
-              "Forgot Password?" option on the login page. You will receive an
-              email with instructions to set up a new password. 3. Check Your
-              Email: - Make sure that the email associated with your account is
-              active, and check your inbox and spam/junk folders for our
-              messages. If you still cannot access your account after following
-              these steps, please provide us with the following information so
-              we can investigate further: - A detailed description of the issue.
-              - Any error messages you may have received (if applicable). - The
+              Hi [Sender Name], Thank you for reaching out to the [Support
+              Email] support team. We're sorry to hear that you're having
+              trouble accessing your account, and we're here to help resolve
+              this issue as quickly as possible. To assist you better, please
+              follow the steps below: 1. Verify Your Credentials: - Ensure that
+              you are entering the correct email address and password. Remember,
+              passwords are case-sensitive. 2. Reset Your Password: - If you
+              don't remember your password, please use the "Forgot Password?"
+              option on the login page. You will receive an email with
+              instructions to set up a new password. 3. Check Your Email: - Make
+              sure that the email associated with your account is active, and
+              check your inbox and spam/junk folders for our messages. If you
+              still cannot access your account after following these steps,
+              please provide us with the following information so we can
+              investigate further: - A detailed description of the issue. - Any
+              error messages you may have received (if applicable). - The
               browser or device you are using. The information you provide will
               help us expedite the resolution process. Once we have these
               details, we'll do our best to resolve your account access issue
               promptly. Thank you for your patience and for being a part of
               [Company Name]. We're here to assist you with anything you need.
-              Best regards, enricampos2020 enricampos2020
-              enricampos2020@gmail.com Support Team
+              Best regards, [Support Email] Support Team
             </p>
           </CardContent>
         </Card>
