@@ -73,3 +73,6 @@ htmlcov/
 .cache
 coverage.xml
 *.cover
+
+# Docker
+.dockerignore

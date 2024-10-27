@@ -1,6 +1,6 @@
 import os
 from fastapi import FastAPI, Depends, HTTPException, Query, Request
-from sqlalchemy.ext.asyncio import AsyncSession # type: ignore
+from sqlalchemy.ext.asyncio import AsyncSession  # type: ignore
 from sqlalchemy import select
 from .database import get_db, engine
 from .models import Base, User
@@ -37,29 +37,29 @@ verification_token = os.getenv("WHATSAPP_VERIFICATION_TOKEN")
 # @app.post("/whatsapp_webhook")
 # async def whatsapp_webhook(request: Request, db: AsyncSession = Depends(get_db)):
 #     data = await request.json()
-    
+
 #     try:
 #         entry = data['entry'][0]
 #         changes = entry['changes'][0]
 #         value = changes['value']
-        
+
 #         if 'messages' in value:
 #             message = value['messages'][0]
 #             contact = value['contacts'][0]
-            
+
 #             phone_number = message['from']
 #             message_body = message['text']['body']
 #             timestamp = message['timestamp']
 #             name = contact['profile']['name']
 
 #             logger.info(f"Received message from {name} ({phone_number}): {message_body} at {timestamp}")
-            
+
 #             # Process the message and get a response
 #             response = await process_message(phone_number, message_body)
-            
+
 #             # Send the response back to WhatsApp
 #             await send_text_message(phone_number, response)
-            
+
 #             return {"status": "Message processed and response sent"}
 #         else:
 #             logger.info(f"Received non-message update: {value}")
@@ -73,19 +73,21 @@ verification_token = os.getenv("WHATSAPP_VERIFICATION_TOKEN")
 #         logger.error(f"Error type: {type(e).__name__}")
 #         logger.exception("Full traceback:")
 #         return {"status": "An unexpected error occurred", "error": str(e)}
-            
+
 
 @app.get("/")
 async def root():
     return {"message": "Welcome to SupperCX API"}
 
+
 app.include_router(users.router, prefix="/users", tags=["users"])
 app.include_router(agents.router, prefix="/agents", tags=["agents"])
 app.include_router(tickets.router, prefix="/tickets", tags=["tickets"])
-app.include_router(ticketmessages.router, prefix="/ticketmessages", tags=["ticketmessages"])
+app.include_router(
+    ticketmessages.router, prefix="/ticketmessages", tags=["ticketmessages"]
+)
 
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run(app, host="0.0.0.0", port=8000)
-
-

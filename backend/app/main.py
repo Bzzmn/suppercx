@@ -18,48 +18,53 @@ logger = logging.getLogger(__name__)
 app = FastAPI(title="SupperCX API", version="0.1.0")
 verification_token = os.getenv("WHATSAPP_VERIFICATION_TOKEN")
 
+
 @app.on_event("startup")
 async def startup():
     # Create tables
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
 
+
 @app.get("/whatsapp_webhook")
 async def verify_token(
     hub_mode: str = Query(..., alias="hub.mode"),
     hub_token: str = Query(..., alias="hub.verify_token"),
-    hub_challenge: str = Query(..., alias="hub.challenge")
+    hub_challenge: str = Query(..., alias="hub.challenge"),
 ):
     if hub_mode == "subscribe" and hub_token == verification_token:
         return int(hub_challenge)
     raise HTTPException(status_code=403, detail="Verification token mismatch")
 
+
 @app.post("/whatsapp_webhook")
 async def whatsapp_webhook(request: Request, db: AsyncSession = Depends(get_db)):
     data = await request.json()
-    
-    try:
-        entry = data['entry'][0]
-        changes = entry['changes'][0]
-        value = changes['value']
-        
-        if 'messages' in value:
-            message = value['messages'][0]
-            contact = value['contacts'][0]
-            
-            phone_number = message['from']
-            message_body = message['text']['body']
-            timestamp = message['timestamp']
-            name = contact['profile']['name']
 
-            logger.info(f"Received message from {name} ({phone_number}): {message_body} at {timestamp}")
-            
+    try:
+        entry = data["entry"][0]
+        changes = entry["changes"][0]
+        value = changes["value"]
+
+        if "messages" in value:
+            message = value["messages"][0]
+            contact = value["contacts"][0]
+
+            phone_number = message["from"]
+            message_body = message["text"]["body"]
+            timestamp = message["timestamp"]
+            name = contact["profile"]["name"]
+
+            logger.info(
+                f"Received message from {name} ({phone_number}): {message_body} at {timestamp}"
+            )
+
             # Process the message and get a response
             response = await process_message(phone_number, message_body)
-            
+
             # Send the response back to WhatsApp
             await send_text_message(phone_number, response)
-            
+
             return {"status": "Message processed and response sent"}
         else:
             logger.info(f"Received non-message update: {value}")
@@ -74,15 +79,20 @@ async def whatsapp_webhook(request: Request, db: AsyncSession = Depends(get_db))
         logger.exception("Full traceback:")
         return {"status": "An unexpected error occurred", "error": str(e)}
 
+
 @app.get("/")
 async def root():
     return {"message": "Welcome to SupperCX API"}
 
+
 app.include_router(users.router, prefix="/users", tags=["users"])
 app.include_router(agents.router, prefix="/agents", tags=["agents"])
 app.include_router(tickets.router, prefix="/tickets", tags=["tickets"])
-app.include_router(ticketmessages.router, prefix="/ticketmessages", tags=["ticketmessages"])
+app.include_router(
+    ticketmessages.router, prefix="/ticketmessages", tags=["ticketmessages"]
+)
 
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run(app, host="0.0.0.0", port=8000)

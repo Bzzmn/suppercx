@@ -4,6 +4,7 @@ from .database import Base
 import enum
 import datetime
 
+
 # Enums
 class TicketState(enum.Enum):
     new = "new"
@@ -11,13 +12,16 @@ class TicketState(enum.Enum):
     pending = "pending"
     closed = "closed"
 
+
 class Origin(enum.Enum):
     email = "email"
     whatsapp = "whatsapp"
 
+
 class AgentType(enum.Enum):
     human = "human"
     ia_agent = "ia_agent"
+
 
 # Models
 class User(Base):
@@ -29,10 +33,12 @@ class User(Base):
     username = Column(String, unique=True, nullable=False)
     number = Column(String, unique=True, nullable=False)
 
+
 class Agent(Base):
     __tablename__ = "agents"
     id = Column(Integer, primary_key=True, index=True)
     type = Column(Enum(AgentType), nullable=False)
+
 
 class Ticket(Base):
     __tablename__ = "tickets"
@@ -46,6 +52,7 @@ class Ticket(Base):
     agent_id = Column(Integer, ForeignKey("agents.id"))
     user = relationship("User", backref="tickets")
     agent = relationship("Agent", backref="tickets")
+
 
 class TicketMessage(Base):
     __tablename__ = "ticket_messages"
