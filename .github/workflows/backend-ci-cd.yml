@@ -9,6 +9,7 @@ on:
     branches: [ main ]
     paths:
       - 'backend/**'
+  workflow_dispatch:  # Allows manual triggering
 
 jobs:
   build-and-push:
@@ -31,6 +32,14 @@ jobs:
         context: ./backend
         file: ./backend/Dockerfile
         push: true
-        tags: yourdockerhubusername/suppercx-backend:latest
+        tags: ${{ secrets.DOCKERHUB_USERNAME }}/suppercx-backend:latest
 
-    # Add deployment steps here, e.g., to deploy to a cloud service
+    - name: Verify push to DockerHub
+      run: |
+        echo "Attempting to pull the pushed image..."
+        if docker pull ${{ secrets.DOCKERHUB_USERNAME }}/suppercx-backend:latest; then
+          echo "Image successfully pushed and pulled from DockerHub"
+        else
+          echo "Failed to pull image from DockerHub. Push may have failed."
+          exit 1
+        fi
