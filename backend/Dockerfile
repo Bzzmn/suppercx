@@ -13,14 +13,14 @@ RUN apt-get update && apt-get install -y \
 RUN pip install poetry
 
 # Copy only requirements to cache them in docker layer
-COPY pyproject.toml poetry.lock* /app/
+COPY pyproject.toml poetry.lock* ./
 
 # Project initialization:
 RUN poetry config virtualenvs.create false \
     && poetry install --no-interaction --no-ansi
 
 # Copy the current directory contents into the container at /app
-COPY . /app/
+COPY . .
 
 # Make port 8000 available to the world outside this container
 EXPOSE 8000
