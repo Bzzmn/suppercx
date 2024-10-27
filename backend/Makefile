@@ -30,7 +30,7 @@ run:
 	@if [ $$(docker ps -a -q -f name=suppercx-backend) ]; then \
 		docker rm -f suppercx-backend > /dev/null 2>&1; \
 	fi
-	@docker run --name suppercx-backend -p 8000:8000 \
+	@docker run --name suppercx-backend -p 8003:8003 \
 		-e POSTGRES_URL \
 		-e REDIS_URL \
 		-e YOUTUBE_API_KEY \
@@ -63,7 +63,7 @@ dev:
 # Production environment variables should be set securely and not in the Makefile
 run-prod:
 	@echo "Running production Docker container..."
-	@docker run --name suppercx-backend -p 8000:8000 \
+	@docker run --name suppercx-backend -p 8003:8003 \
 		-e POSTGRES_URL \
 		-e REDIS_URL \
 		-e YOUTUBE_API_KEY \
