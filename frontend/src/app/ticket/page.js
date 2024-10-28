@@ -3,9 +3,36 @@ import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import TicketTable from "@/components/TicketTable";
-import tickets from "@/lib/db/tickets";
+// import tickets from "@/lib/db/tickets";
 
-export default function Page() {
+export default async function Page() {
+  const ticketStatusVocabulary = {
+    open: "open",
+    pending: "pending",
+    new: "new",
+    autoAnswered: "auto_answered",
+    closed: "closed",
+  };
+  const apiResponse = await fetch(
+    "https://suppercx.thefullstack.digital/tickets"
+  );
+  let tickets = await apiResponse.json();
+
+  tickets = tickets.map((ticket) => ({
+    id: ticket.id,
+    title: ticket.description,
+    source: ticket.source,
+    status: ticket.status,
+    originalLanguage: ticket.original_language,
+    messages: ticket.messages.map((message) => ({
+      id: message.id,
+      sender: message.sender,
+      email: message.email,
+      body: message.body,
+      sentDateTime: message.sent_date_time,
+    })),
+  }));
+
   return (
     <>
       <div className="flex items-center justify-between mb-6">
@@ -45,17 +72,27 @@ export default function Page() {
           </TabsList>
           <TabsContent value="needs-supervision">
             <TicketTable
-              data={tickets.filter((row) => row.status === "Pending")}
+              data={tickets.filter((row) =>
+                [
+                  ticketStatusVocabulary.new,
+                  ticketStatusVocabulary.open,
+                  ticketStatusVocabulary.pending,
+                ].includes(row.status)
+              )}
             />
           </TabsContent>
           <TabsContent value="auto-answered">
             <TicketTable
-              data={tickets.filter((row) => row.status === "Auto Answered")}
+              data={tickets.filter(
+                (row) => row.status === ticketStatusVocabulary.autoAnswered
+              )}
             />
           </TabsContent>
           <TabsContent value="closed-tickets">
             <TicketTable
-              data={tickets.filter((row) => row.status === "Closed")}
+              data={tickets.filter(
+                (row) => row.status === ticketStatusVocabulary.closed
+              )}
             />
           </TabsContent>
         </Tabs>
