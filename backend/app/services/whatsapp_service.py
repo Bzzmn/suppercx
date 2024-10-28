@@ -3,19 +3,20 @@ import os
 from dotenv import load_dotenv
 from fastapi import HTTPException
 import logging
+from app.cx_crew.src.crew import get_crew
 
 load_dotenv()
 
-token = os.getenv("WHATSAPP_API_KEY")
-url = os.getenv("WHATSAPP_URL")
+whatsapp_token = os.getenv("WHATSAPP_API_KEY")
+whatsapp_url = os.getenv("WHATSAPP_URL")
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-async def send_text_message(to: str, body: str):
-    url = f"https://graph.facebook.com/v21.0/{os.getenv('WHATSAPP_PHONE_NUMBER_ID')}/messages"
+async def send_whatsapp_message(to: str, body: str):
+    url = whatsapp_url
     headers = {
-        "Authorization": f"Bearer {os.getenv('WHATSAPP_API_KEY')}",
+        "Authorization": f"Bearer {whatsapp_token}",
         "Content-Type": "application/json",
     }
     data = {
@@ -41,4 +42,17 @@ async def send_text_message(to: str, body: str):
             raise HTTPException(status_code=500, detail=str(e))
 
 async def process_message(phone_number: str, message: str):
-    pass
+    try:
+        crew = get_crew()
+        
+        result = crew.kickoff(inputs={"query": message})
+        
+        response_text = result.raw if hasattr(result, 'raw') else str(result)
+        
+        await send_whatsapp_message(phone_number, response_text)
+        
+        return response_text
+    except Exception as e:
+        print(f"Error processing message: {str(e)}")
+        await send_whatsapp_message(phone_number, "Lo siento, ocurrió un error al procesar tu mensaje.")
+        raise

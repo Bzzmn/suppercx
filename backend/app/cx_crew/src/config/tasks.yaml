@@ -1,9 +1,63 @@
-customer_support:
+customer_support_task:
   description: >
-    You are a customer support agent. with every message you will receive a query from the customer.
-    your job is to provide a response to the customer's query and a little fun joke.
-    this is the query: {query}
+    Begin the interaction with a warm greeting and immediately focus on understanding the customer’s query or issue through active listening. If needed, rephrase the query to ensure it’s clear and easy to resolve, then coordinate with the research team to gather precise information. Synthesize the response in a clear and concise format, delivering it to the customer in an easily understandable manner. Always confirm that the response fully addresses their query, and if further assistance is needed, repeat the process or escalate as necessary. Conclude the interaction by thanking the customer.
   expected_output: >
-    Provide a response to the customer's query. Be very consice and to the point. Not more than 3 sentences.
-    Provide a fun joke after the response.
-    Do not repeat yourself.
+    A clear and concise response to the customer's query, tailored to their specific needs and easy for them to understand. The response should fully address the customer's issue, providing a solution or necessary information directly related to their question. If the customer's query was complex or required additional clarification, ensure that the response breaks down the information logically and is free from jargon. The output should leave the customer feeling satisfied, acknowledged, and informed, with an option for further assistance if needed.
+  agent:
+    - customer_support_agent
+
+# scrape_youtube_search_task:
+#   description: >
+#     Search for and scrape 5 videos relevant to the specified search query.
+#     Extract relevant information about the content of these videos.
+#     Ensure that all information comes directly from the YouTube videos. 
+#     Do not make up any information.
+#   expected_output: >
+#     A list of 5 videos with their title, description, and url.
+#   agent:
+#     - scrape_agent
+
+# convert_user_input_to_search_yt_query_task:
+#   description: >
+#     Given a user input, transform it into a very concise and accurate search query for youtube videos.
+#     Focus on extracting the key topic or goal the user is trying to accomplish.
+#     The query should be very concise and to the point, maximum 4 keywords.
+#     Example: "I want to buy a new laptop, I use my laptop for work, I need a good battery life, and a good processor. I also like to play video games,so I want a good graphics card."
+#     The query would be: "best+laptops+work+gaming"
+#   expected_output: >
+#     A very concise and accurate search query for youtube videos.
+#   agent:
+#     - scrape_agent
+
+# process_videos_task:
+#   description: >
+#     Process the extracted video urls from the previous task 
+#     and add them to the vector database.
+#     Ensure that each video is properly added to the vector database.
+#     If for any reason you cannot add a video, skip it.
+#     All information must come directly from the searches. 
+#     Do not make up any information.
+#   expected_output: >
+#     Successfully add videos to the vector database.
+#   agent:
+#     - vector_db_agent
+
+# research_product_task:
+#   description: >
+#         Given a user input, research a list of products and extract the most relevant features, 
+#         including brand, model, and key characteristics. Compare the products, 
+#         highlighting their pros and cons, as well as unique features. Ensure that 
+#         the information is accurate, detailed, and useful for decision-making.
+#         Use the RAG tool to query the knowledge base for relevant information.
+#         The query is already provided by the previous task as context.
+#         Remember that when using the RAG tool, you must give the input as a string, not a list.
+#         Dont make up any information, only use the information from the knowledge base. If you cannot find any information, say so.
+#         This is the user input:
+#         {user_input}
+#   expected_output: >
+#         - A list of products with brand and model.
+#         - A comparison table or detailed comparison between the products.
+#         - Key features, pros, and cons of each product.
+#         - Any unique selling points or standout characteristics.
+#   agent:
+#     - product_research_agent
